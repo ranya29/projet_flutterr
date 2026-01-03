@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../services/auth_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -8,140 +9,157 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Paramètres"),
-        backgroundColor: Colors.purple,
-        foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/home'),
+          onPressed: () => context.pop(),
         ),
+        title: const Text('Paramètres'),
+        backgroundColor: Colors.purple,
+        foregroundColor: Colors.white,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          _buildSettingCard(
-            icon: Icons.account_circle,
-            title: "Profil",
-            onTap: () => _showComingSoon(context, "Profil"),
+          _SettingsTile(
+            icon: Icons.person,
+            title: 'Profil',
+            onTap: () => context.push('/profile'),
           ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
+
+          _SettingsTile(
             icon: Icons.notifications,
-            title: "Notifications",
-            onTap: () => _showComingSoon(context, "Notifications"),
+            title: 'Notifications',
+            onTap: () => context.push('/notifications'),
           ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
-            icon: Icons.security,
-            title: "Confidentialité",
-            onTap: () => _showComingSoon(context, "Confidentialité"),
+
+          _SettingsTile(
+            icon: Icons.shield,
+            title: 'Confidentialité',
+            onTap: () => context.push('/privacy'),
           ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
-            icon: Icons.color_lens,
-            title: "Thème",
-            onTap: () => _showComingSoon(context, "Thème"),
+
+          _SettingsTile(
+            icon: Icons.palette,
+            title: 'Thème',
+            onTap: () => context.push('/theme'),
           ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
+
+          _SettingsTile(
             icon: Icons.help,
-            title: "Aide & Support",
-            onTap: () => _showComingSoon(context, "Aide"),
+            title: 'Aide & Support',
+            onTap: () => context.push('/support'),
           ),
-          const SizedBox(height: 8),
-          _buildSettingCard(
+
+          _SettingsTile(
             icon: Icons.info,
-            title: "À propos",
-            onTap: () => _showAbout(context),
+            title: 'À propos',
+            onTap: () => context.push('/about'),
           ),
-          const SizedBox(height: 24),
+
+          const SizedBox(height: 20),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ElevatedButton.icon(
-              onPressed: () => _confirmLogout(context),
+              onPressed: () async {
+                final shouldLogout = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Déconnexion'),
+                    content: const Text(
+                        'Voulez-vous vraiment vous déconnecter ?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.pop(context, false),
+                        child: const Text('Annuler'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () =>
+                            Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text(
+                          'Se déconnecter',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (shouldLogout == true && context.mounted) {
+                  await AuthService.logout();
+                  context.go('/login');
+                }
+              },
               icon: const Icon(Icons.logout),
-              label: const Text("Se déconnecter"),
+              label: const Text('Se déconnecter'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+
+          const SizedBox(height: 20),
+
           const Center(
             child: Text(
               'Version 1.0.0',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildSettingCard({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.purple),
-        title: Text(title),
-        trailing: const Icon(Icons.chevron_right),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.purple.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: Colors.purple),
+        ),
+        title: const Text(
+          '',
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: Colors.grey,
+        ),
         onTap: onTap,
-      ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("$feature - Bientôt disponible")),
-    );
-  }
-
-  void _showAbout(BuildContext context) {
-    showAboutDialog(
-      context: context,
-      applicationName: "Mes Contacts",
-      applicationVersion: "1.0.0",
-      applicationIcon: const Icon(
-        Icons.contacts,
-        color: Colors.purple,
-        size: 50,
-      ),
-      children: const [
-        SizedBox(height: 10),
-        Text("Application de gestion de contacts"),
-        SizedBox(height: 10),
-        Text("Développée avec Flutter & SQLite"),
-        SizedBox(height: 10),
-        Text("© 2025 - Tous droits réservés"),
-      ],
-    );
-  }
-
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Voulez-vous vraiment vous déconnecter ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.go('/login');
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Déconnecter'),
-          ),
-        ],
       ),
     );
   }

@@ -1,11 +1,12 @@
 class Contact {
-  final int? id;
-  final String name;
-  final String phone;
-  final String? email;
-  final String? note;
-  final String? photo;
-  final bool isFavorite;
+  int? id;
+  String name;
+  String phone;
+  String? email;
+  String? note;
+  String? photo;
+  bool isFavorite;
+  int? userId; // ✅ ID de l'utilisateur propriétaire
 
   Contact({
     this.id,
@@ -15,96 +16,67 @@ class Contact {
     this.note,
     this.photo,
     this.isFavorite = false,
+    this.userId,
   });
 
-  // =========================
-  // 🔹 SQLITE (EXISTANT)
-  // =========================
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'phone': phone,
-      'email': email,
-      'note': note,
-      'photo': photo,
-      'isFavorite': isFavorite ? 1 : 0,
-    };
-  }
-
-  factory Contact.fromMap(Map<String, dynamic> map) {
-    return Contact(
-      id: map['id'] as int?,
-      name: map['name'] as String,
-      phone: map['phone'] as String,
-      email: map['email'] as String?,
-      note: map['note'] as String?,
-      photo: map['photo'] as String?,
-      isFavorite: (map['isFavorite'] as int?) == 1,
-    );
-  }
-
-  // =========================
-  // 🔹 FASTAPI / JSON (AJOUTÉ)
-  // =========================
+  // Conversion depuis JSON (API)
   factory Contact.fromJson(Map<String, dynamic> json) {
     return Contact(
-      id: json['id'] as int?,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      email: json['email'] as String?,
-      note: json['note'] as String?,
-      photo: json['photo'] as String?,
+      id: json['id'],
+      name: json['name'],
+      phone: json['phone'],
+      email: json['email'],
+      note: json['note'],
+      photo: json['photo'],
       isFavorite: json['isFavorite'] ?? false,
+      userId: json['user_id'], // ✅ user_id depuis l'API
     );
   }
 
+  // Conversion vers JSON (API)
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id != null) 'id': id,
       'name': name,
       'phone': phone,
       'email': email,
       'note': note,
       'photo': photo,
       'isFavorite': isFavorite,
+      if (userId != null) 'user_id': userId, // ✅ user_id vers l'API
     };
   }
 
-  // =========================
-  // 🔹 UTILS (EXISTANT)
-  // =========================
-  Contact copyWith({
-    int? id,
-    String? name,
-    String? phone,
-    String? email,
-    String? note,
-    String? photo,
-    bool? isFavorite,
-  }) {
+  // Conversion depuis Map (SQLite local si utilisé)
+  factory Contact.fromMap(Map<String, dynamic> map) {
     return Contact(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      phone: phone ?? this.phone,
-      email: email ?? this.email,
-      note: note ?? this.note,
-      photo: photo ?? this.photo,
-      isFavorite: isFavorite ?? this.isFavorite,
+      id: map['id'],
+      name: map['name'],
+      phone: map['phone'],
+      email: map['email'],
+      note: map['note'],
+      photo: map['photo'],
+      isFavorite: map['isFavorite'] == 1,
+      userId: map['user_id'],
     );
+  }
+
+  // Conversion vers Map (SQLite local si utilisé)
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != null) 'id': id,
+      'name': name,
+      'phone': phone,
+      'email': email,
+      'note': note,
+      'photo': photo,
+      'isFavorite': isFavorite ? 1 : 0,
+      if (userId != null) 'user_id': userId,
+    };
   }
 
   @override
   String toString() {
-    return 'Contact(id: $id, name: $name, phone: $phone, email: $email, isFavorite: $isFavorite)';
+    return 'Contact(id: $id, name: $name, phone: $phone, userId: $userId)';
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Contact && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
 }

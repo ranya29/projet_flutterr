@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:go_router/go_router.dart'; // AJOUT
+import 'package:go_router/go_router.dart';
 import '../../services/contact_service.dart';
 import '../../models/contact.dart';
 
@@ -41,7 +41,13 @@ class _AddContactScreenState extends State<AddContactScreen> {
       ));
       
       if (mounted) {
-        context.go('/contacts'); // CORRECTION
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Contact ajouté avec succès'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.go('/contacts');
       }
     }
   }
@@ -50,6 +56,13 @@ class _AddContactScreenState extends State<AddContactScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // ✅ FLÈCHE DE RETOUR AJOUTÉE ICI
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/contacts'); // Retour à la liste des contacts
+          },
+        ),
         title: const Text("Ajouter un contact"),
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,

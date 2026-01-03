@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'dart:io' show Platform;
 import 'router/app_router.dart';
+import 'providers/theme_provider.dart';
 
 void main() {
-  // Initialiser sqflite pour Windows/Linux/Desktop
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-  
+
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -19,26 +25,49 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: AppRouter.router,
-      title: 'Mes Contacts',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.purple,
-        brightness: Brightness.light,
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.purple,
-        scaffoldBackgroundColor: Colors.black,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.deepPurple,
-          foregroundColor: Colors.white,
-        ),
-        useMaterial3: true,
-      ),
-      themeMode: ThemeMode.system,
+    // Utiliser Consumer pour que MaterialApp se rebuild quand le thème change
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final lightScheme = ColorScheme.fromSeed(
+          seedColor: themeProvider.primaryColor,
+          brightness: Brightness.light,
+        );
+
+        final darkScheme = ColorScheme.fromSeed(
+          seedColor: themeProvider.primaryColor,
+          brightness: Brightness.dark,
+        );
+
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          routerConfig: AppRouter.router,
+          title: 'Mes Contacts',
+
+          theme: ThemeData(
+            colorScheme: lightScheme,
+            useMaterial3: true,
+            appBarTheme: AppBarTheme(
+              backgroundColor: lightScheme.primary,
+              foregroundColor: Colors.white,
+            ),
+            floatingActionButtonTheme: FloatingActionButtonThemeData(
+              backgroundColor: lightScheme.primary,
+            ),
+          ),
+          darkTheme: ThemeData(
+            colorScheme: darkScheme,
+            useMaterial3: true,
+            appBarTheme: AppBarTheme(
+              backgroundColor: darkScheme.primary,
+              foregroundColor: Colors.white,
+            ),
+            floatingActionButtonTheme: FloatingActionButtonThemeData(
+              backgroundColor: darkScheme.primary,
+            ),
+          ),
+          themeMode: themeProvider.themeMode, // <- Le mode sombre fonctionne maintenant
+        );
+      },
     );
   }
 }

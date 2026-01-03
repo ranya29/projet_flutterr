@@ -54,6 +54,13 @@ class _ContactListScreenState extends State<ContactListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // ✅ AJOUT DE LA FLÈCHE DE RETOUR
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/home'); // Retour à la page d'accueil
+          },
+        ),
         title: const Text('Mes Contacts'),
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
