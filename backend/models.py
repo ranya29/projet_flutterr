@@ -10,11 +10,12 @@ class Contact(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    phone = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String, index=True, nullable=False)
     email = Column(String, nullable=True)
     note = Column(String, nullable=True)
     photo = Column(String, nullable=True)
     isFavorite = Column(Boolean, default=False)
+    user_id = Column(Integer, nullable=False, index=True)  # ✅ Lien avec l'utilisateur
 
 # ======== Modèles Pydantic (Validation) ========
 
@@ -25,6 +26,7 @@ class ContactCreate(BaseModel):
     note: Optional[str] = None
     photo: Optional[str] = None
     isFavorite: bool = False
+    user_id: int  # ✅ OBLIGATOIRE
 
 class ContactResponse(BaseModel):
     id: int
@@ -34,6 +36,7 @@ class ContactResponse(BaseModel):
     note: Optional[str] = None
     photo: Optional[str] = None
     isFavorite: bool
+    user_id: int
 
     class Config:
         from_attributes = True
